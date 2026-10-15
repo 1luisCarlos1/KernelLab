@@ -45,7 +45,43 @@ Os resultados quantitativos, a análise dos algoritmos e as limitações da impl
 
 # 6. Resultados e discussão
 
-Esta seção será preenchida com os resultados reais obtidos na execução do KernelLab, incluindo tabelas comparativas, gráficos, análise das métricas e discussão das diferenças entre os algoritmos.
+# 6.1 Escalonamento da CPU
+
+Foram executados quatro algoritmos de escalonamento: FCFS, SJF, Round Robin com quantum de 3 unidades de tempo e escalonamento por prioridade, considerando os seis processos definidos no cenário da MedControl Systems.
+
+O FCFS apresentou tempo médio de espera de 13,67 e tempo médio de retorno de 20,50, com cinco trocas de contexto. O SJF apresentou resultados menores para essas métricas, com espera média de 10,67 e retorno médio de 17,50, também com cinco trocas de contexto.
+
+O escalonamento por prioridade obteve os mesmos resultados do SJF nesta execução: espera média de 10,67, retorno médio de 17,50 e cinco trocas de contexto. Essa igualdade ocorreu devido à ordem de seleção dos processos disponíveis neste conjunto de dados, não sendo uma equivalência geral entre os algoritmos.
+
+O Round Robin apresentou tempo médio de resposta de 5,33, inferior ao dos demais algoritmos. Por outro lado, sua espera média foi de 18,00 e seu retorno médio foi de 24,83, com 13 trocas de contexto registradas. Esses resultados evidenciam o compromisso entre oferecer oportunidades de execução aos processos e aumentar a frequência de alternância da CPU.
+
+Considerando o cenário da MedControl, o tempo de resposta merece atenção especial devido à existência de um processo de emissão de alarme crítico. O algoritmo de prioridade pode ser adequado quando tarefas críticas precisam receber preferência, mas a implementação atual é não preemptiva. Portanto, um processo prioritário que chega enquanto outro está executando precisa aguardar o término deste último.
+
+# 6.2 Gerenciamento de memória virtual
+
+A simulação de memória foi realizada com quatro frames e uma sequência de 17 referências a páginas. O FIFO registrou 12 faltas e cinco acertos, correspondendo a uma taxa de faltas de 70,59%. O LRU registrou dez faltas e sete acertos, com taxa de 58,82%. O Optimal apresentou sete faltas e dez acertos, resultando em taxa de 41,18%.
+
+Para a sequência utilizada, o Optimal apresentou o menor número de faltas. Esse resultado é esperado porque o algoritmo escolhe a página cuja próxima utilização está mais distante no futuro, utilizando o conhecimento prévio da sequência. Na prática, esse conhecimento não está disponível de forma perfeita, de modo que o Optimal serve como referência para avaliar outros métodos.
+
+O LRU obteve resultado intermediário e superou o FIFO nesta sequência. O FIFO, por sua vez, substitui a página que está há mais tempo na memória, sem considerar diretamente a frequência ou a proximidade de uma nova utilização.
+
+Os resultados mostram que a escolha do algoritmo de substituição influencia a quantidade de faltas de página. Entretanto, a conclusão está limitada à sequência e à quantidade de frames utilizadas nesta simulação.
+
+# 6.3 Controle de acesso aos dispositivos
+
+O módulo de dispositivos apresentou uma matriz de permissões por processo e recurso. Durante os testes, as solicitações de P1 para leitura da rede, P3 para escrita no disco e P4 para uso do áudio foram aceitas. Uma solicitação de P1 para utilizar o disco foi negada, pois esse processo não possui a permissão correspondente.
+
+O programa também processou as filas dos dispositivos de forma sequencial e apresentou mensagens de conclusão das solicitações. Essa etapa demonstra o controle básico de permissões e o gerenciamento de filas.
+
+Entretanto, a execução registrada não comprova, por si só, a disputa simultânea entre processos. A validação da concorrência e da sincronização com mutexes exige um teste adicional que provoque acessos concorrentes ao mesmo recurso e demonstre que o mecanismo de exclusão mútua impede acessos simultâneos incompatíveis.
+
+# 6.4 Síntese dos resultados
+
+Nas simulações realizadas, SJF e Prioridade apresentaram a menor espera média de CPU, enquanto Round Robin obteve a menor resposta média. Na memória, Optimal apresentou a menor taxa de faltas, seguido por LRU e FIFO.
+
+Esses resultados não indicam que exista um único algoritmo superior em todas as situações. A escolha depende dos objetivos do sistema: reduzir a espera média, melhorar a resposta inicial, favorecer processos críticos ou diminuir faltas de página.
+
+Para o cenário da MedControl, recomenda-se avaliar uma política de prioridade preemptiva para tarefas críticas, acompanhada de mecanismos contra starvation, além de testar a sincronização real dos dispositivos. As recomendações devem ser consideradas propostas de melhoria, e não funcionalidades já comprovadas pela implementação atual.
 
 # 7. Conclusão
 
