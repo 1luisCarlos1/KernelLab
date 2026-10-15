@@ -43,50 +43,83 @@ As simulações utilizam os processos definidos no arquivo JSON e uma sequência
 
 Os resultados quantitativos, a análise dos algoritmos e as limitações da implementação serão apresentados nas próximas seções após a consolidação das execuções e dos testes.
 
-# 6. Resultados e discussão
+# 6. Resultados e análise
 
-# 6.1 Escalonamento da CPU
+# 6.1 Comparação dos algoritmos de escalonamento da CPU
 
-Foram executados quatro algoritmos de escalonamento: FCFS, SJF, Round Robin com quantum de 3 unidades de tempo e escalonamento por prioridade, considerando os seis processos definidos no cenário da MedControl Systems.
+Foram executados quatro algoritmos de escalonamento: FCFS, SJF, Round Robin com quantum de 3 unidades de tempo e Prioridade. A comparação considera o tempo médio de espera, o tempo médio de retorno, o tempo médio de resposta e a quantidade de trocas de contexto.
 
-O FCFS apresentou tempo médio de espera de 13,67 e tempo médio de retorno de 20,50, com cinco trocas de contexto. O SJF apresentou resultados menores para essas métricas, com espera média de 10,67 e retorno médio de 17,50, também com cinco trocas de contexto.
+| Algoritmo | Espera média | Retorno médio | Resposta média | Trocas de contexto |
+|---|---:|---:|---:|---:|
+| FCFS | 13,67 | 20,50 | 13,67 | 5 |
+| SJF | 10,67 | 17,50 | 10,67 | 5 |
+| Round Robin | 18,00 | 24,83 | 5,33 | 13 |
+| Prioridade | 10,67 | 17,50 | 10,67 | 5 |
 
-O escalonamento por prioridade obteve os mesmos resultados do SJF nesta execução: espera média de 10,67, retorno médio de 17,50 e cinco trocas de contexto. Essa igualdade ocorreu devido à ordem de seleção dos processos disponíveis neste conjunto de dados, não sendo uma equivalência geral entre os algoritmos.
+**Figura 1 — Comparação dos algoritmos de escalonamento da CPU**
 
-O Round Robin apresentou tempo médio de resposta de 5,33, inferior ao dos demais algoritmos. Por outro lado, sua espera média foi de 18,00 e seu retorno médio foi de 24,83, com 13 trocas de contexto registradas. Esses resultados evidenciam o compromisso entre oferecer oportunidades de execução aos processos e aumentar a frequência de alternância da CPU.
+![Gráfico de comparação da CPU](../resultados/comparacao_cpu.png)
 
-Considerando o cenário da MedControl, o tempo de resposta merece atenção especial devido à existência de um processo de emissão de alarme crítico. O algoritmo de prioridade pode ser adequado quando tarefas críticas precisam receber preferência, mas a implementação atual é não preemptiva. Portanto, um processo prioritário que chega enquanto outro está executando precisa aguardar o término deste último.
+Nesta execução, SJF e Prioridade apresentaram os menores tempos médios de espera e retorno. Já o Round Robin apresentou o menor tempo médio de resposta, mas registrou mais trocas de contexto.
+
+O algoritmo de Prioridade implementado é não preemptivo. Por isso, o processo P4, responsável pela emissão de um alarme crítico, não interrompe o processo P1 quando este já está utilizando a CPU. Para um cenário médico, seria importante avaliar uma estratégia que desse resposta mais rápida às tarefas críticas.
 
 # 6.2 Gerenciamento de memória virtual
 
-A simulação de memória foi realizada com quatro frames e uma sequência de 17 referências a páginas. O FIFO registrou 12 faltas e cinco acertos, correspondendo a uma taxa de faltas de 70,59%. O LRU registrou dez faltas e sete acertos, com taxa de 58,82%. O Optimal apresentou sete faltas e dez acertos, resultando em taxa de 41,18%.
+A simulação utilizou quatro frames e uma sequência de 17 referências a páginas.
 
-Para a sequência utilizada, o Optimal apresentou o menor número de faltas. Esse resultado é esperado porque o algoritmo escolhe a página cuja próxima utilização está mais distante no futuro, utilizando o conhecimento prévio da sequência. Na prática, esse conhecimento não está disponível de forma perfeita, de modo que o Optimal serve como referência para avaliar outros métodos.
+| Algoritmo | Acertos de página | Faltas de página | Taxa de faltas |
+|---|---:|---:|---:|
+| FIFO | 5 | 12 | 70,59% |
+| LRU | 7 | 10 | 58,82% |
+| Optimal | 10 | 7 | 41,18% |
 
-O LRU obteve resultado intermediário e superou o FIFO nesta sequência. O FIFO, por sua vez, substitui a página que está há mais tempo na memória, sem considerar diretamente a frequência ou a proximidade de uma nova utilização.
+**Figura 2 — Comparação dos algoritmos de substituição de páginas**
 
-Os resultados mostram que a escolha do algoritmo de substituição influencia a quantidade de faltas de página. Entretanto, a conclusão está limitada à sequência e à quantidade de frames utilizadas nesta simulação.
+![Gráfico de comparação da memória](../resultados/comparacao_memoria.png)
+
+O algoritmo Optimal apresentou o menor número de faltas de página para a sequência utilizada. Isso ocorre porque ele considera qual página será utilizada mais distante no futuro. Como essa informação não costuma estar disponível antecipadamente em um sistema real, o algoritmo serve principalmente como referência de comparação.
+
+O LRU apresentou resultado melhor que o FIFO nesta simulação. Entretanto, os resultados dependem da sequência de referências e da quantidade de frames utilizada.
 
 # 6.3 Controle de acesso aos dispositivos
 
-O módulo de dispositivos apresentou uma matriz de permissões por processo e recurso. Durante os testes, as solicitações de P1 para leitura da rede, P3 para escrita no disco e P4 para uso do áudio foram aceitas. Uma solicitação de P1 para utilizar o disco foi negada, pois esse processo não possui a permissão correspondente.
+O simulador utiliza uma matriz de permissões para controlar o acesso dos processos aos dispositivos. Nos testes realizados, foram aceitas as solicitações de P1 para leitura da rede, P3 para escrita no disco e P4 para uso do áudio. A solicitação de P1 para utilizar o disco foi negada por falta de permissão.
 
-O programa também processou as filas dos dispositivos de forma sequencial e apresentou mensagens de conclusão das solicitações. Essa etapa demonstra o controle básico de permissões e o gerenciamento de filas.
+O programa também possui filas de solicitações e mecanismos de bloqueio utilizando `Lock`. Porém, o processamento sequencial das filas não comprova, por si só, uma disputa concorrente real entre threads. É necessário realizar um teste adicional com acessos simultâneos ao mesmo recurso para validar o comportamento da sincronização.
 
-Entretanto, a execução registrada não comprova, por si só, a disputa simultânea entre processos. A validação da concorrência e da sincronização com mutexes exige um teste adicional que provoque acessos concorrentes ao mesmo recurso e demonstre que o mecanismo de exclusão mútua impede acessos simultâneos incompatíveis.
+# 6.4 Ciclo de vida dos processos
 
-# 6.4 Síntese dos resultados
+Em um sistema operacional multitarefa, um processo pode passar pelos estados de novo, pronto, executando, bloqueado e finalizado. Esses estados representam, respectivamente, a criação do processo, sua espera pela CPU, sua execução, a espera por algum evento ou recurso e a conclusão de suas atividades.
 
-Nas simulações realizadas, SJF e Prioridade apresentaram a menor espera média de CPU, enquanto Round Robin obteve a menor resposta média. Na memória, Optimal apresentou a menor taxa de faltas, seguido por LRU e FIFO.
+No contexto do KernelLab, os algoritmos de escalonamento representam principalmente a escolha de qual processo utilizará a CPU. A simulação não deve ser interpretada como uma implementação completa de todos os estados e transições de um sistema operacional real.
 
-Esses resultados não indicam que exista um único algoritmo superior em todas as situações. A escolha depende dos objetivos do sistema: reduzir a espera média, melhorar a resposta inicial, favorecer processos críticos ou diminuir faltas de página.
+# 6.5 Limitações e recomendação técnica
 
-Para o cenário da MedControl, recomenda-se avaliar uma política de prioridade preemptiva para tarefas críticas, acompanhada de mecanismos contra starvation, além de testar a sincronização real dos dispositivos. As recomendações devem ser consideradas propostas de melhoria, e não funcionalidades já comprovadas pela implementação atual.
+O KernelLab é uma simulação didática com um conjunto definido de processos, uma CPU simulada e uma sequência específica de referências à memória. Portanto, os resultados não representam todos os comportamentos possíveis de um sistema operacional real.
 
-# 7. Conclusão
+Para o cenário da MedControl Systems, recomenda-se avaliar uma política de prioridade capaz de atender com rapidez os alarmes críticos, acompanhada de mecanismos para reduzir o risco de starvation. Também é necessário validar a sincronização dos dispositivos com testes concorrentes.
 
-O KernelLab busca demonstrar, por meio de simulações, como decisões de escalonamento, gerenciamento de memória e controle de dispositivos influenciam o funcionamento de um sistema operacional. A análise final será elaborada com base nos resultados observados e nas limitações identificadas durante o desenvolvimento.
+A escolha do algoritmo deve considerar diferentes objetivos. SJF e Prioridade apresentaram menores médias de espera neste cenário, enquanto Round Robin apresentou menor tempo médio de resposta. Na memória, Optimal obteve a menor taxa de faltas, seguido por LRU e FIFO.
 
-# 8. Referências
+## 7. Conclusão
 
-As referências deverão ser completadas com os materiais da disciplina e as fontes indicadas no enunciado do trabalho.
+O desenvolvimento do KernelLab permitiu comparar diferentes estratégias de escalonamento da CPU, substituição de páginas e controle de acesso a dispositivos. Os resultados demonstram que cada algoritmo possui vantagens e limitações, e que a escolha depende das necessidades do sistema.
+
+No cenário da MedControl Systems, o atendimento de processos críticos merece atenção especial, assim como a prevenção de starvation e a segurança no acesso aos dispositivos. Os resultados também mostram a importância de testar diferentes cenários antes de definir uma estratégia como a mais adequada.
+
+Como melhorias futuras, propõe-se implementar e testar o escalonamento prioritário preemptivo, demonstrar a concorrência real entre threads e ampliar os testes automatizados. Dessa forma, o projeto poderá representar de maneira mais completa os conceitos estudados na disciplina.
+
+## 8. Referências
+
+1. TANENBAUM, Andrew S.; BOS, Herbert. Sistemas operacionais modernos. 4. ed. São Paulo: Pearson, 2016.
+
+2. UNIVERSIDADE FEDERAL DO VALE DO SÃO FRANCISCO (UNIVASF). Disponível em: https://www.docentes.univasf.edu.br/max.santana/material/OAC-II/sistemas_multiprogramados.pdf. Acesso em: 15 out. 2026.
+
+3. TECNOBLOG. Disponível em: https://tecnoblog.net/responde/o-que-e-um-sistema-operacional/. Acesso em: 09 out. 2026.
+
+4. MEDCONTROL SYSTEMS. Material fornecido no enunciado da atividade de Sistemas Operacionais.
+
+5. PYTHON SOFTWARE FOUNDATION. Disponível em: https://docs.python.org/3/. Acesso em: 10 out. 2026.
+
+6. MATPLOTLIB DEVELOPMENT TEAM. Disponível em: https://matplotlib.org/stable/. Acesso em: 10 out. 2026.
