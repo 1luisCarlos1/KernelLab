@@ -1,0 +1,76 @@
+# KernelLab — Simulador de Sistemas Operacionais
+
+# Sobre o projeto
+
+O KernelLab é um simulador desenvolvido em Python para demonstrar conceitos fundamentais de Sistemas Operacionais. O projeto permite estudar o escalonamento de processos, o gerenciamento de memória virtual e o controle de acesso a dispositivos.
+
+# Funcionalidades
+
+# 1. Escalonamento de CPU
+- FCFS (First Come, First Served)
+- SJF (Shortest Job First)
+- Round Robin, com quantum configurável
+- Escalonamento por prioridade
+- Gráfico e cálculo de métricas dos processos
+- Tempo de espera, retorno e resposta
+- Contagem de trocas de contexto
+
+# 2. Gerenciamento de memória
+- Algoritmos FIFO, LRU e Optimal
+- Simulação de substituição de páginas
+- Visualização do estado dos quadros de memória
+- Contagem de acertos e faltas de página
+- Comparação entre algoritmos
+
+# 3. Controle de dispositivos
+- Simulação de acesso a disco, rede, áudio e logs
+- Matriz de permissões por processo
+- Filas de solicitações
+- Uso de mecanismos de exclusão mútua
+
+# Tecnologias utilizadas
+
+- Python
+- Matplotlib
+- JSON
+- `threading` e `collections`
+
+# Como executar
+
+1. Instale o Python 3.
+2. Abra o terminal na pasta principal do projeto.
+3. Instale a dependência:
+
+   ```bash
+   python -m pip install -r requirements.txt
+   ```
+
+4. Execute o simulador:
+
+   ```bash
+   python src/main.py
+   ```
+
+# Como executar os testes
+
+Execute no terminal:
+
+```bash
+python -m unittest discover -s tests -p "test_*.py" -v
+```
+
+# Estrutura do projeto
+
+- `src/`: código-fonte do simulador.
+- `data/`: dados dos processos.
+- `tests/`: testes automatizados.
+- `resultados/`: gráficos gerados pelo programa.
+- `docs/`: documentação e materiais do projeto.
+
+# Objetivo acadêmico
+
+Demonstrar, por meio de simulações, o funcionamento de algoritmos e mecanismos utilizados em Sistemas Operacionais, permitindo comparar resultados e discutir desempenho, justiça no escalonamento e gerenciamento de recursos.
+
+# Observação
+
+O KernelLab é um projeto acadêmico de simulação. Os resultados representam o comportamento dos algoritmos implementados, não o funcionamento interno de um sistema operacional real.
